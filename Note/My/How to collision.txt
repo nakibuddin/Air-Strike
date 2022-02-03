@@ -1,0 +1,92 @@
+
+#include"iGraphics.h"
+void ball_draw();
+void rec();
+
+int ball_x , ball_y , dx, dy;
+int recX=0 , recY=0;
+int scr=0, a=0;
+
+void iDraw()
+{
+	iClear();
+	rec();
+	ball_draw();
+	
+	iSetColor(0,255,0);
+	char score[100];
+	sprintf(score,"Your score is %d",scr);
+	iText(200,480,score,GLUT_BITMAP_HELVETICA_18);
+}
+
+void ball_draw()
+{
+	iSetColor(255,0,0);
+	iFilledCircle(ball_x,ball_y,4);
+}
+
+void rec()
+{
+	iSetColor(300,400,125);
+	iFilledRectangle(recX,recY,50,20);
+}
+
+void iSpecialKeyboard(unsigned char  a)
+{
+	if(a == GLUT_KEY_LEFT && recX >=20)
+	{
+		recX -= 20;
+	}
+	if(a == GLUT_KEY_RIGHT && recX <540 )
+	{
+		recX += 20;
+	}
+}
+
+void ball_chang_and_collision()
+{
+	ball_x= ball_x + dx;
+	ball_y= ball_y + dy;
+
+	if(ball_x>600 || ball_x<0) dx=-dx;
+	if(ball_y>600 || ball_y<0) dy=-dy;
+
+	if( (ball_x  >= recX && ball_x <= recX +50) && (ball_y  >= recY && ball_y <= recY +50)) 
+		{
+			a=1;
+		}
+	
+	if(a==1 && (ball_x < recX || ball_x > recX + 50))
+	{
+		scr +=1;
+		a=0;
+	}
+}
+
+#include<conio.h>
+void main()
+{
+	ball_x=10;
+	ball_y=150;
+	
+	dx=5;
+	dy=7;
+
+	iSetTimer(30,ball_chang_and_collision);	
+	iInitialize(590,600,"Nakib");
+}
+
+void iMouse(int button, int k7, int k1, int k2){}
+void iMouseMove(int k3, int k4 ){}
+void iPassiveMouseMove(int k5, int k6){}
+void iKeyboard(unsigned char k){}
+
+/*
+	function iSpecialKeyboard() is called whenver user hits special keys like-
+	function keys, home, end, pg up, pg down, arraows etc. you have to use
+	appropriate constants to detect them. A list is:
+	GLUT_KEY_F1, GLUT_KEY_F2, GLUT_KEY_F3, GLUT_KEY_F4, GLUT_KEY_F5, GLUT_KEY_F6,
+	GLUT_KEY_F7, GLUT_KEY_F8, GLUT_KEY_F9, GLUT_KEY_F10, GLUT_KEY_F11, GLUT_KEY_F12,
+	GLUT_KEY_LEFT, GLUT_KEY_UP, GLUT_KEY_RIGHT, GLUT_KEY_DOWN, GLUT_KEY_PAGE UP,
+	GLUT_KEY_PAGE DOWN, GLUT_KEY_HOME, GLUT_KEY_END, GLUT_KEY_INSERT
+*/

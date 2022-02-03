@@ -1,0 +1,134 @@
+
+#include"iGraphics.h"
+
+int x , y , ball_x , ball_y , ball_dx, ball_dy;
+
+int dx, dy;
+
+int x3,y3,dx3,dy3,Na;
+
+void iDraw()
+{
+	iClear();
+
+	iFilledEllipse(x3,y3,50,50);
+	iText(100,560,"Hello men for stop press p and for restart press r",GLUT_BITMAP_HELVETICA_18);
+	iSetColor(0,255,0);
+	iRectangle(100,100,400,400);
+	iSetColor(255,0,0);
+	iFilledCircle(ball_x,ball_y,4);
+	iShowBMP(x,y,"girl.bmp");
+	//iLine(100,100,228,100);
+}
+
+
+void iMouse(int button, int k7, int k1, int k2)
+{
+	iPauseTimer(Na);
+
+}
+
+void iMouseMove(int k3, int k4 )
+{
+	//x=k3;
+	//y=k4;
+	
+}
+
+void iPassiveMouseMove(int k5, int k6)
+{
+		iResumeTimer(1);	
+	//x=k5;
+	//y=k6;
+}
+
+void iKeyboard(unsigned char k)
+{
+		if(k == 'p')
+	{
+		//do something with 'q'
+		iPauseTimer(0);
+	}
+	if(k == 'r')
+	{
+		iResumeTimer(0);
+	}
+
+}
+
+/*
+	function iSpecialKeyboard() is called whenver user hits special keys like-
+	function keys, home, end, pg up, pg down, arraows etc. you have to use
+	appropriate constants to detect them. A list is:
+	GLUT_KEY_F1, GLUT_KEY_F2, GLUT_KEY_F3, GLUT_KEY_F4, GLUT_KEY_F5, GLUT_KEY_F6,
+	GLUT_KEY_F7, GLUT_KEY_F8, GLUT_KEY_F9, GLUT_KEY_F10, GLUT_KEY_F11, GLUT_KEY_F12,
+	GLUT_KEY_LEFT, GLUT_KEY_UP, GLUT_KEY_RIGHT, GLUT_KEY_DOWN, GLUT_KEY_PAGE UP,
+	GLUT_KEY_PAGE DOWN, GLUT_KEY_HOME, GLUT_KEY_END, GLUT_KEY_INSERT
+*/
+void iSpecialKeyboard(unsigned char  a)
+{
+	if(a == GLUT_KEY_END)
+	{
+		exit(0);
+	}
+	if(a == GLUT_KEY_LEFT)
+	{
+		x--;
+	}
+	if(a == GLUT_KEY_RIGHT)
+	{
+		x++;
+	}
+	if(a == GLUT_KEY_UP)
+	{
+		y++;
+	}
+	if(a == GLUT_KEY_DOWN)
+	{
+		y--;
+	}
+}
+
+
+void f()
+{
+	ball_x=ball_x + ball_dx;
+	ball_y=ball_y + ball_dy;
+
+	if(ball_x>600 || ball_x<0) ball_dx=-ball_dx;
+	if(ball_y>600 || ball_y<0) ball_dy=-ball_dy;
+
+	x+=dx;
+	y+=dy;
+	if(x > 368 || x < 102) dx = -dx;
+	if(y > 369 || y < 105) dy = -dy;
+}
+void f3()
+{
+	x3+=dx3;
+	y3+=dy3;
+	if(x3>600 || x3<0) dx3=-dx3;
+	if(y3>600 || y3<0) dy3=-dy3;
+
+}
+
+#include<conio.h>
+void main()
+{
+	x3=3,y3=5;
+	dx3=3,dy3=5;
+	iSetTimer(30,f3);
+	
+	x=125,y=125;
+	dx=5,dy=7;
+	
+	ball_x=10;
+	ball_y=150;
+	
+	ball_dx=5;
+	ball_dy=5;
+
+	Na=iSetTimer(30,f);	
+	iInitialize(600,600,"Nakib");
+}
+
