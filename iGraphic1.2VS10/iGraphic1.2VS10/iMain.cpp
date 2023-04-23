@@ -1,532 +1,701 @@
+// for timer/couter --> int my_time, update_time(),  iSetTimer(1000, update_time), iResumeTimer(3), iPauseTimer(3) 
+// for wait a moment after gave over --> int waitAMoment
+// int play, value of play = 1 means easy level, value of play = 2 means hard level
+
 #include"iGraphics.h"
-void text();
-void bulletMethod();
-void bubbleMethod();
-void lifeMethod();
-void High_score_read();
-void High_score_Write();
-void check_high_score();
-void sort_arry();
-void draw_input_box();
+void iMouse(int button, int state, int k1, int k2);
+void iKeyboard(unsigned char mx);					// ..., enter the name
+void iSpecialKeyboard(unsigned char a);				// manage the movement of shooter
+
+void iMouseMove(int k3, int k4 );
+void iPassiveMouseMove(int k5, int k6);
+
+void show_score_and_life_in_text();		// when game is running show the score, time, life, level, pause, resume, restart, Manu
+void bulletMethod();					// create 3 bullet
+void bubbleMethod();					// show bubble.bmp 
+void lifeMethod();						// if life = 0 then this function will be relevent
+
+void High_score_read();					// read the high scores from text file and call check_high_score() function
+void High_score_Write();				// call the high_score_sort() function and write the scores into a text file
+void check_high_score();				// check high score found or not.
+void high_score_sort();					// sort the high scores
+
 void start_game();
-void menu();
-void high_score();
-void show_score();
-void instruction();
-void variable_reinitialization_1();
-void variable_reinitialization_2();
-void variable_reinitialization_3();
-void level();
-void bullet_change_and_collision_2();
+void home();							//(p0) show the p0_home_page.bmp 
+void score_page();						//(p2) show the p2_score_page.bmp
+void show_score();						//(p3) show the p3_show_high_score_page.bmp and print/display the high scores
+void instruction();						//(p5) show the p5_instruction_page.bmp
+void setting();							//(p6) show the p6_setting_page.bmp and select the level
 void level_read();
+void game_over();						//(p7) show the p7_game_over.bmp , game score and time
+void game_over_and_high_score();		//(p8) show the p8_game_over_and_high_score.bmp, game score, time and input rectangle
+void about_us();						//(p9) show the p9_about_us.bmp
 
-/////////
+void common_variable_reinitialization();
+void variable_reinitialization_1();		// for try again. when game is running or over
+void variable_reinitialization_2();		// back to the main menu. when game is running or over
 
-int shooterX=180, shooterY=0;
-char text_score[20];
+void bubble_change();					// change the bubble movement and inside this function life-- statement execute
+bool detect_collision(int j);			// detect bubble and bullet collision
+
+void bullet_change_and_collision_level_wise(); // manage and work on (level wise) bullet collision
+void bullet_change_and_collision();			   // this function is called by bullet_change_and_collision_level_wise() function
+
+void update_time();
+
+
+//*** variable declaration ***//
+
+int shooterX=640, shooterY=20;
+char text_score[20], text_score_value[20], text_life[20], text_life_value[20], aa1[20];
 char str[100];
 char text_high_score[100];
 int scr=0;
-int end_life= 0;	/// used in lifeMethod() .
+int end_life= 0;	// used in lifeMethod() .
 int a3[6];
 int len = 0;
-int l=0, n=0 ,o,r,t;
-int active_input;
-int page=0;
+int highScoreFound = 0, n = 0 ,o,r,t;
+int page = 0;
 int life=-30;
 int play;
+int pause = 0;
+int my_time = 0, time_minute;
+float time_second;
+char text_time[10], text_time_value[30];
+int waitAMoment = 0;	// for wait a moment after gave over
 
+double bulletX[3]={685.5,685.5,685.5};
+double bulletY[3]={80,80,80};
 
-double bulletX[3]={218,218,218};
-double bulletY[3]={65,65,65};
+// ** warking with bullet start **
 
 int bulletget[3]={1,1,1};
 int mode[3]={0,0,0};
-int e[3]={0,0,0};
-int f[3]={0,0,0};
-int s[3]={0,0,0};
+int w[3]={0,0,0};
+int a[3]={0,0,0};
+int d[3]={0,0,0};
 
 int x[3]={1,1,1};
 int y[3]={1,1,1};
 int z[3]={1,1,1};
-int i, j, k;
-int p;
+int i, j, k;	// for loop incremental variable
 
 int count[5]={1,1,1,1,1};
 
+// ** warking with bullet end **
+
+int p; // for loop incremental variable
 
 struct file
 {
     char name[25];
-    int highscore;
+    int highscore;	
+	int second;
+	int minute;
 } b,scores[6];
-
 
 struct bubble
 {
 	int bubbleX;	////radius of bubble 58.
 	int bubbleY;
-	int dx;
-	int dy;
-}	bubble[20]={{50,388,-3,-2},{388,388,2,-3},{200,800,3,-3},{100,1300,0,-3},{300,1800,0,-3}};		
-
-
+	float dx;
+	float dy;
+}	bubble[20]={{340,660,2,-1},{1020,660,-2,-2},{(260+rand() % 800),1300,2,-3},
+						{(260+rand() % 800),1700,-3,-2},{(260+rand() % 800),3000,-3,-3}};
 
 void iDraw()
 {
-	iClear();
-					//iShowBMP(0,0,"gamelevel.bmp");
+	iClear();	
 	start_game();
-	menu();
-	high_score();
+	home();
+	score_page();
 	show_score();
 	instruction();
-	level();
-	
-}
-
-void iMouse(int button, int state, int k1, int k2)
-{
-	if(page==1 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-	{
-		if(k1 >= 115 && k1 <= 364 && k2 >= 180 && k2 <= 212)	/// main manu
-			active_input = 1;
-	}
-
-	if(page==0 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-	{
-		if(k1 >= 135 && k1 <= 317 && k2 >= 293 && k2 <= 338)	/// new game
-			page = 1;		
-		
-		else if(k1 >= 127 && k1 <= 325 && k2 >= 230 && k2 <= 275)	/// high score
-			page = 2;
-		
-		else if(k1 >= 133 && k1 <= 317 && k2 >= 166 && k2 <= 212)	/// instruction
-			page = 5;
-		
-		else if(k1 >= 181 && k1 <= 271 && k2 >= 103 && k2 <= 149)	/// level
-			page = 6;			
-		
-		else if(k1 >= 192 && k1 <= 259 && k2 >= 41 && k2 <= 86)		/// exit
-			exit(0);
-	}
-
-
-	if(page==5 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)		
-	{
-		if(k1 >= 8 && k1 <= 144 && k2 >= 28 && k2 <= 70)	/// back from instruction
-			page = 0;
-	}
-
-	
-	if(page==2 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-	{
-		if(k1 >= 0 && k1 <= 145 && k2 >= 0 && k2 <= 62)		/// back from high score															
-			page = 0;
-		else if(k1 >= 182 && k1 <= 270 && k2 >= 280 && k2 <= 330)	/// easy high score
-			page =3;
-		else if(k1 >= 183 && k1 <= 281 && k2 >= 148 && k2 <= 199)	/// hard high score
-			page = 4;
-	}
-
-	if(page==3 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-	{
-		if(k1 >= 38 && k1 <= 102 && k2 >= 45 && k2 <= 77)		/// back from easy high score
-			page = 2;
-	}
-
-	if(page==4 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-	{
-		if(k1 >= 38 && k1 <= 102 && k2 >= 45 && k2 <= 77)		/// back from hard high score
-			page = 2;
-	}
-
-	if(page==1 && l!=1 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-	{
-		if(k1 >= 140 && k1 <= 264 && k2 >= 275 && k2 <= 307)		/// for try again. when game over
-			variable_reinitialization_1();
-		
-		else if(k1 >= 132 && k1 <= 272 && k2 >= 229 && k2 <= 261)		/// back main menu. when game over 
-			variable_reinitialization_2();
-	}
-
-	if(page==6 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-	{
-		if(k1 >= 0 && k1 <= 145 && k2 >= 0 && k2 <= 62)		/// back from level
-			page = 0;
-
-		else if(k1 >= 182 && k1 <= 270 && k2 >= 217 && k2 <= 268)	//// for easy level
-		{
-			play = 1;
-			life = 2;
-			
-			FILE *nakib;
-			nakib = fopen("Level.txt","w");
-			fprintf(nakib,"%d %d",play,life);
-			fclose(nakib);
-		}
-		
-		else if(k1 >= 183 && k1 <= 281 && k2 >= 148 && k2 <= 199)	//// for hard level
-		{
-			play = 2;
-			life = 3;
-
-			FILE *nakib;
-			nakib = fopen("Level.txt","w");
-			fprintf(nakib,"%d %d",play,life);
-			fclose(nakib);
-		}
-
-	}
-}
-
-void variable_reinitialization_1()	/// if retry
-{	
-	if(play == 1)
-		life = 2;
-	else
-		life = 3;
-	
-	l = 0;
-	scr = 0;	
-	end_life = 0;
-	iResumeTimer(0);
-	iResumeTimer(1);
-	iResumeTimer(2);
-
-	bubble[0].bubbleX = 0;
-	bubble[0].bubbleY = 388;
-	bubble[1].bubbleX = 388;
-	bubble[1].bubbleY = 388;
-	bubble[2].bubbleX = 200;
-	bubble[2].bubbleY = 800;
-	bubble[3].bubbleX = 100;
-	bubble[3].bubbleY = 1300;
-	bubble[4].bubbleX = 300;
-	bubble[4].bubbleY = 1800;
-
-	bulletget[0] = 1;
-	bulletget[1] = 1;
-	bulletget[2] = 1;
-
-	bulletX[0]=218;
-	bulletX[1]=218;
-	bulletX[2]=218;
-	bulletY[0]=65;
-	bulletY[1]=65;
-	bulletY[2]=65;
-	count[0]=1;
-	count[1]=1;
-	count[2]=1;
-	count[3]=1;
-	count[4]=1;
-	e[0]=0;
-	e[1]=0;
-	e[2]=0;
-	f[0]=0;
-	f[1]=0;
-	f[2]=0;
-	s[0]=0;
-	s[1]=0;
-	s[2]=0;
-}
-
-void variable_reinitialization_2()
-{	
-	page = 0;
-	
-	if(play == 1)
-		life = 2;
-	else
-		life = 3;
-	
-	l = 0;
-	scr = 0;
-	end_life = 0;
-	iResumeTimer(0);
-	iResumeTimer(1);
-	iResumeTimer(2);
-
-	bubble[0].bubbleX = 0;
-	bubble[0].bubbleY = 388;
-	bubble[1].bubbleX = 388;
-	bubble[1].bubbleY = 388;
-	bubble[2].bubbleX = 200;
-	bubble[2].bubbleY = 800;
-	bubble[3].bubbleX = 100;
-	bubble[3].bubbleY = 1300;
-	bubble[4].bubbleX = 300;
-	bubble[4].bubbleY = 1800;
-
-	bulletget[0] = 1;
-	bulletget[1] = 1;
-	bulletget[2] = 1;
-
-	bulletX[0]=218;
-	bulletX[1]=218;
-	bulletX[2]=218;
-	bulletY[0]=65;
-	bulletY[1]=65;
-	bulletY[2]=65;
-	count[0]=1;
-	count[1]=1;
-	count[2]=1;
-	count[3]=1;
-	count[4]=1;
-	e[0]=0;
-	e[1]=0;
-	e[2]=0;
-	f[0]=0;
-	f[1]=0;
-	f[2]=0;
-	s[0]=0;
-	s[1]=0;
-	s[2]=0;
-}
-
-void variable_reinitialization_3()		/// if high score occure
-{
-	page = 0;
-
-	if(play == 1)
-		life = 2;
-	else
-		life = 3;
-	
-	l = 0;
-	scr = 0;	
-	end_life = 0;
-	iResumeTimer(0);
-	iResumeTimer(1);
-	iResumeTimer(2);
-
-	bubble[0].bubbleX = 0;
-	bubble[0].bubbleY = 388;
-	bubble[1].bubbleX = 388;
-	bubble[1].bubbleY = 388;
-	bubble[2].bubbleX = 200;
-	bubble[2].bubbleY = 800;
-	bubble[3].bubbleX = 100;
-	bubble[3].bubbleY = 1300;
-	bubble[4].bubbleX = 300;
-	bubble[4].bubbleY = 1800;
-
-	bulletget[0] = 1;
-	bulletget[1] = 1;
-	bulletget[2] = 1;
-
-	bulletX[0]=218;
-	bulletX[1]=218;
-	bulletX[2]=218;
-	bulletY[0]=65;
-	bulletY[1]=65;
-	bulletY[2]=65;
-	count[0]=1;
-	count[1]=1;
-	count[2]=1;
-	count[3]=1;
-	count[4]=1;
-	e[0]=0;
-	e[1]=0;
-	e[2]=0;
-	f[0]=0;
-	f[1]=0;
-	f[2]=0;
-	s[0]=0;
-	s[1]=0;
-	s[2]=0;
-}
-
-void menu()
-{
-	if(page == 0)
-	{
-		iShowBMP(0,0,"menu.bmp");
-	}
+	about_us();
+	setting();	
+	game_over();
+	game_over_and_high_score();
 }
 
 void start_game()
-{
+{		
 	if(page == 1)
 	{
 		level_read();
-		bubbleMethod();
-		bulletMethod();	
-		lifeMethod();
-		draw_input_box();
-		text();
-					//iLine(200,200,264,200);
-					//iLine(200,300,258,300);
-					//iLine(218,70,218,59);
-		iLine(0,65,450,65);
-		iShowBMP(shooterX,shooterY,"shooter.bmp");
-		iShowBMP(418,45,"life.bmp");
+		bubbleMethod();  // just show the all bubble using iShowBMP()
+		bulletMethod();	 // just show the all bullet using iShowBMP()
+		lifeMethod();		
+		show_score_and_life_in_text();
+	
+		iShowBMP(shooterX,shooterY,"image/object/shooter.bmp");
+	
+		iSetColor(168,38,147);
+		iFilledRectangle(238,0,3,712);	/// left vertical line
+		iFilledRectangle(1130,0,3,712);	/// right vertical line		
+		iLine(239,85,1133,85);			/// horizontal line
+	}
+}
+
+void bubbleMethod()
+{
+	iShowBMP(bubble[0].bubbleX, bubble[0].bubbleY, "image/object/bubble.bmp");
+	iShowBMP(bubble[1].bubbleX, bubble[1].bubbleY, "image/object/bubble.bmp");
+	iShowBMP(bubble[2].bubbleX, bubble[2].bubbleY, "image/object/bubble.bmp");
+	iShowBMP(bubble[3].bubbleX, bubble[3].bubbleY, "image/object/bubble.bmp");
+	iShowBMP(bubble[4].bubbleX, bubble[4].bubbleY, "image/object/bubble.bmp");
+}
+
+void bulletMethod()
+{
+	iSetColor(168,38,147);
+	iFilledCircle(bulletX[0],bulletY[0],3);
+	iFilledCircle(bulletX[1],bulletY[1],3);
+	iFilledCircle(bulletX[2],bulletY[2],3);
+}
+
+void home()
+{
+	if(page == 0)
+	{
+		iShowBMP(233,0,"image/p0_home_page.bmp");
+	}
+}
+
+void score_page()
+{
+	if(page == 2)
+	{
+		iShowBMP(233,0,"image/p2_score_page.bmp");
 	}
 }
 
 void show_score()
 {
-	int i, j=311 ;
+	int i, j=311, temp=1;
 	
-	if(page == 3)
+	if(page == 3)	// show easy high scores
 	{
-		iShowBMP(38,45,"back.bmp");
-
-		iSetColor(255,0,0);
-		iText(176,397,"High Score",GLUT_BITMAP_HELVETICA_18);
-
 		High_score_read();
+		iShowBMP(233,0,"image/p3_show_high_score_page.bmp");
 
-		for(i=0;i<=4;i++)
+		iSetColor(168,38,147);
+		iRectangle(487,250, 388, 278);		
+		iRectangle(486,249, 390, 280);		
+		iRectangle(485,248, 392, 282);		
+		iRectangle(484,247, 394, 284);		
+		iRectangle(483,246, 396, 286);		
+		
+		iSetColor(255,255,255);
+		iRectangle(482,245, 398, 288);
+		iRectangle(481,244, 400, 290);
+
+		iSetColor(168,38,147);
+		iRectangle(480,243, 402, 292);
+		iRectangle(479,242, 404, 294);
+		iRectangle(478,241, 406, 296);
+		iRectangle(477,240, 408, 298);
+		iRectangle(476,239, 410, 300)	;	
+
+		iSetColor(255,255,255);
+		iLine(487,480,874,480);
+		iLine(487,434,874,434);
+		iLine(487,390,874,390);
+		iLine(487,343,874,343);
+		iLine(487,298,874,298);
+
+		iText(530,495,"Name",GLUT_BITMAP_TIMES_ROMAN_24);
+		iText(680,495,"Score",GLUT_BITMAP_TIMES_ROMAN_24);
+		iText(785,495,"Time",GLUT_BITMAP_TIMES_ROMAN_24);
+
+		j=450;
+		for(i=0;i<=4;i++)	// show sequence number
 		{
-			sprintf(text_high_score,"%s", scores[i].name);
-			iSetColor(0,255,0);
-			iText(135,j,text_high_score,GLUT_BITMAP_HELVETICA_18);
-			j -= 35;
+			sprintf(text_high_score,"%d.", temp++);			
+			iText(500,j,text_high_score,GLUT_BITMAP_TIMES_ROMAN_24);
+			j -= 45;
+		}
+		
+		j=450;
+		for(i=0;i<=4;i++)	// show easy high score holder's name
+		{
+			sprintf(text_high_score,"%s", scores[i].name);			
+			iText(530,j,text_high_score,GLUT_BITMAP_TIMES_ROMAN_24);
+			j -= 45;
 		}
 
-		j=311;
-		for(i=0;i<=4;i++)
+		j=450;
+		for(i=0;i<=4;i++)	// show easy high scores
 		{
-			sprintf(text_high_score,"%d", scores[i].highscore);
-			iSetColor(0,255,0);
-			iText(281,j,text_high_score,GLUT_BITMAP_HELVETICA_18);
-			j -= 35;
-		}		
+			sprintf(text_high_score,"%d", scores[i].highscore);			
+			iText(686,j,text_high_score,GLUT_BITMAP_TIMES_ROMAN_24);
+			j -= 45;
+		}	
+
+		j=450;
+		for(i=0;i<=4;i++)	// show minute and second
+		{
+			if(scores[i].minute == 0){			
+				sprintf(text_high_score,"%ds", scores[i].second);			
+				iText(795,j,text_high_score,GLUT_BITMAP_TIMES_ROMAN_24);
+			}
+			else{			
+				sprintf(text_high_score,"%dm %ds", scores[i].minute, scores[i].second);			
+				iText(785,j,text_high_score,GLUT_BITMAP_TIMES_ROMAN_24);
+			}
+			j -= 45;
+		}	
 	}
 
-	else if(page == 4)
+	else if(page == 4)	// show hard high scores
 	{
-		iShowBMP(38,45,"back.bmp");
-
-		iSetColor(255,0,0);
-		iText(176,397,"High Score",GLUT_BITMAP_HELVETICA_18);
-
 		High_score_read();
+		iShowBMP(233,0,"image/p3_show_high_score_page.bmp");
 
-		for(i=0;i<=4;i++)
+		iSetColor(168,38,147);
+		iRectangle(487,250, 388, 278);		
+		iRectangle(486,249, 390, 280);		
+		iRectangle(485,248, 392, 282);		
+		iRectangle(484,247, 394, 284);		
+		iRectangle(483,246, 396, 286);		
+		
+		iSetColor(255,255,255);
+		iRectangle(482,245, 398, 288);
+		iRectangle(481,244, 400, 290);
+
+		iSetColor(168,38,147);
+		iRectangle(480,243, 402, 292);
+		iRectangle(479,242, 404, 294);
+		iRectangle(478,241, 406, 296);
+		iRectangle(477,240, 408, 298);
+		iRectangle(476,239, 410, 300)	;	
+
+		iSetColor(255,255,255);
+		iLine(487,480,874,480);
+		iLine(487,434,874,434);
+		iLine(487,390,874,390);
+		iLine(487,343,874,343);
+		iLine(487,298,874,298);
+
+		iText(530,495,"Name",GLUT_BITMAP_TIMES_ROMAN_24);
+		iText(680,495,"Score",GLUT_BITMAP_TIMES_ROMAN_24);
+		iText(785,495,"Time",GLUT_BITMAP_TIMES_ROMAN_24);
+
+		j=450;
+		for(i=0;i<=4;i++)	// show sequence number
 		{
-			sprintf(text_high_score,"%s", scores[i].name);
-			iSetColor(0,255,0);
-			iText(135,j,text_high_score,GLUT_BITMAP_HELVETICA_18);
-			j -= 35;
+			sprintf(text_high_score,"%d.", temp++);			
+			iText(500,j,text_high_score,GLUT_BITMAP_TIMES_ROMAN_24);
+			j -= 45;
+		}
+		
+		j=450;
+		for(i=0;i<=4;i++)	// show easy high score holder's name
+		{
+			sprintf(text_high_score,"%s", scores[i].name);			
+			iText(530,j,text_high_score,GLUT_BITMAP_TIMES_ROMAN_24);
+			j -= 45;
 		}
 
-		j=311;
-		for(i=0;i<=4;i++)
+		j=450;
+		for(i=0;i<=4;i++)	// show easy high scores
 		{
-			sprintf(text_high_score,"%d", scores[i].highscore);
-			iSetColor(0,255,0);
-			iText(281,j,text_high_score,GLUT_BITMAP_HELVETICA_18);
-			j -= 35;
-		}		
-	}
-}
+			sprintf(text_high_score,"%d", scores[i].highscore);			
+			iText(686,j,text_high_score,GLUT_BITMAP_TIMES_ROMAN_24);
+			j -= 45;
+		}	
 
-void high_score()
-{
-	if(page == 2)
-	{
-		iShowBMP(182,280,"easy.bmp");
-		iShowBMP(183,148,"hard.bmp");
-		iShowBMP(0,0,"level_back.bmp");
+		j=450;
+		for(i=0;i<=4;i++)	// show minute and second
+		{
+			if(scores[i].minute == 0){			
+				sprintf(text_high_score,"%ds", scores[i].second);			
+				iText(795,j,text_high_score,GLUT_BITMAP_TIMES_ROMAN_24);
+			}
+			else{			
+				sprintf(text_high_score,"%dm %ds", scores[i].minute, scores[i].second);			
+				iText(785,j,text_high_score,GLUT_BITMAP_TIMES_ROMAN_24);
+			}
+			j -= 45;
+		}				
 	}
 }
 
 void instruction()
 {
-	if(page == 5)
-	iShowBMP(0,0,"instruction.bmp");
+	if(page == 5){
+		iShowBMP(233,0,"image/p5_instruction_page.bmp");		
+	}
 }
 
-void level()
+void setting()
 {
 	if(page == 6)
 	{
-		iShowBMP(112,398,"gamelevel.bmp");
-		iShowBMP(182,217,"easy.bmp");
-		iShowBMP(183,148,"hard.bmp");
-		iShowBMP(0,0,"level_back.bmp");
+		iShowBMP(233,0,"image/p6_setting_page.bmp");
 		
 		FILE *fp;
-		fp = fopen("Level.txt", "r");
+		fp = fopen("file/Level.txt", "r");
 		fscanf(fp," %d", &play);
 		fclose(fp);
 		
-		iSetColor(255,0,0);
+		iSetColor(255,255,255);
 		if(play == 1)
-			iText(300,238,"ON",GLUT_BITMAP_HELVETICA_18);
+			iText(835,455,"ON",GLUT_BITMAP_HELVETICA_18);
 		else if(play ==2)
-			iText(309,164,"ON",GLUT_BITMAP_HELVETICA_18);
+			iText(836,353,"ON",GLUT_BITMAP_HELVETICA_18);
 	}
 }
 
 void level_read()
 {
-	int a,i=0;
+	int temp,i=0;
 	FILE *fp;
 
-	fp = fopen("Level.txt", "r");
-	fscanf(fp," %d  %d", &play,&a);
+	fp = fopen("file/Level.txt", "r");
+	fscanf(fp," %d  %d", &play,&temp);   // read the value of a from the level.txt file
 	fclose(fp);
 
-	if(life == -30)
-		life = a;
+	if(life == -30)		// initial declared value of life=-30
+		life = temp;
 }
 
-
-
-void bubbleMethod()
+void game_over()
 {
-	iShowBMP(bubble[0].bubbleX, bubble[0].bubbleY, "Bubble.bmp");
-	iShowBMP(bubble[1].bubbleX, bubble[1].bubbleY, "Bubble.bmp");
-	iShowBMP(bubble[2].bubbleX, bubble[2].bubbleY, "Bubble.bmp");
-	iShowBMP(bubble[3].bubbleX, bubble[3].bubbleY, "Bubble.bmp");
-	iShowBMP(bubble[4].bubbleX, bubble[4].bubbleY, "Bubble.bmp");
+	if(page == 7)
+	{
+		iShowBMP(233,0,"image/p7_game_over.bmp");
+
+		iSetColor(255,255,255);
+		sprintf(text_score,"%d",scr);
+		iText(775,488,text_score,GLUT_BITMAP_HELVETICA_18);
+				
+		if(my_time < 60){		
+			sprintf(text_time_value,"%d s",my_time);
+			iText(795,430,text_time_value,GLUT_BITMAP_HELVETICA_18);
+		}
+		else{		
+			sprintf(text_time_value,"%d m %.0f s",time_minute, time_second);
+			iText(795,430,text_time_value,GLUT_BITMAP_HELVETICA_18);
+		}
+	}
 }
 
-void bulletMethod()
+void game_over_and_high_score()
 {
-	iSetColor(138,69,0);
-	iPoint ( bulletX[0],bulletY[0],2);
-	iPoint ( bulletX[1],bulletY[1],2);
-	iPoint ( bulletX[2],bulletY[2],2);
+	if(page == 8){
+		iShowBMP(233,0,"image/p8_game_over_and_high_score.bmp");
+
+		iSetColor(255,255,255);
+		sprintf(text_score,"%d",scr);
+		iText(772,411,text_score,GLUT_BITMAP_HELVETICA_18);
+
+		if(my_time < 60){		
+			sprintf(text_time_value,"%d s",my_time);
+			iText(792,368,text_time_value,GLUT_BITMAP_HELVETICA_18);
+		}
+		else{		
+			sprintf(text_time_value,"%d m %.0f s",time_minute, time_second);
+			iText(792,368,text_time_value,GLUT_BITMAP_HELVETICA_18);
+		}
+		//iSetColor(168,38,147);
+			
+		iSetColor(255,255,255);
+		iRectangle(754, 244, 118, 30);
+		iRectangle(755, 245, 118, 30);
+
+		iSetColor(255, 255, 255);
+		iText(762, 253, str,GLUT_BITMAP_HELVETICA_18);
+	}
+}
+
+void about_us()
+{
+	if(page == 9){		
+		iShowBMP(233,0,"image/p9_about_us.bmp");
+	}
 }
 
 void lifeMethod()
 {
-	if(life == 0)
-	{
+	if(life <= 0)
+	{		
 		iPauseTimer(0);
-		iPauseTimer(1);
+		iPauseTimer(1);		
 		iPauseTimer(2);
-		end_life = 1;	/// when game over then end_life = 1 . that's why shooter can not be moven by user.
-		shooterX = 180;
+		end_life = 1;	/// when game over(or pause) then end_life = 1 . that's why shooter can not be moven by user.
+
+		iPauseTimer(3); // for pause the time counter ( iSetTimer(1000, update_time) )			
 	}
 
-	if(life == 0 && l == 0)
-	{
-		iSetColor(0,255,0);
-		iText(155,380,"GAME OVER",GLUT_BITMAP_HELVETICA_18);
-		sprintf(text_score,"Your Score is %d",scr);
-		iText(142,330,text_score,GLUT_BITMAP_HELVETICA_18);
-		iShowBMP(140,275,"try_again.bmp");
-		iShowBMP(132,229,"back_main_manu.bmp");
-		
+	if(life <= 0 && highScoreFound == 0)
+	{	
+		if( waitAMoment < 180 )
+		{
+			waitAMoment ++ ;			
+			printf("wait just a moment");
+
+			iSetColor(255,255,255);
+			iText(577,368,"Best Wishes for the Future",GLUT_BITMAP_HELVETICA_18);
+		}
+		else
+			page = 7;
 	}
+
+	if(life <= 0 && highScoreFound == 1)
+	{
+		if( waitAMoment < 180 )
+		{
+			waitAMoment ++ ;
+			printf("wait just a moment");
+
+			iSetColor(255,255,255);
+			iText(577,368,"Best Wishes for the Future",GLUT_BITMAP_HELVETICA_18);
+		}
+		else
+			page = 8;
+	}
+	
 }
 
 
 
+void iMouse(int button, int state, int k1, int k2)
+{	
+	if(page==0 && button == GLUT_LEFT_BUTTON && state == GLUT_UP)
+	{
+		if(k1 >= 548 && k1 <= 815 && k2 >= 479 && k2 <= 539)	/// go to play page
+		{
+			bubble[0].dy = -1;	bubble[1].dy = -2;  bubble[2].dy = -3;  bubble[3].dy = -2;  bubble[4].dy = -3;
+			page = 1;
+			my_time = 0;
+			iResumeTimer(3);						
+		}
+	
+		else if(k1 >= 548 && k1 <= 815 && k2 >= 316 && k2 <= 376)	/// go to (score/high score) page
+			page = 2;
+		
+		else if(k1 >= 548 && k1 <= 815 && k2 >= 234 && k2 <= 294)	/// go to instruction page
+			page = 5;
+		
+		else if(k1 >= 548 && k1 <= 815 && k2 >= 396 && k2 <= 456)	/// go to (setting/level) page
+			page = 6;
+
+		else if(k1 >= 548 && k1 <= 815 && k2 >= 150 && k2 <= 210)	/// go to about us page
+			page = 9;
+		
+		else if(k1 >= 548 && k1 <= 815 && k2 >= 68 && k2 <= 128)		/// exit from the game
+			exit(0);
+	}
+
+	if(page==5 && button == GLUT_LEFT_BUTTON && state == GLUT_UP)		
+	{
+		if(k1 >= 342 && k1 <= 534 && k2 >= 94 && k2 <= 154)	/// back from instruction
+			page = 0;
+	}
+
+	if(page==9 && button == GLUT_LEFT_BUTTON && state == GLUT_UP)		
+	{
+		if(k1 >= 342 && k1 <= 534 && k2 >= 94 && k2 <= 154)	/// back from about us
+			page = 0;
+	}
+	
+	if(page==2 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+	{
+		if(k1 >= 342 && k1 <= 534 && k2 >= 94 && k2 <= 154)		/// back from high score															
+			page = 0;		
+		else if(k1 >= 570 && k1 <= 800 && k2 >= 430 && k2 <= 488)	/// go to easy high score
+			page = 3;
+		else if(k1 >= 570 && k1 <= 800 && k2 >= 330 && k2 <= 388)	/// go to hard high score
+			page = 4;
+	}
+
+	if(page==3 && button == GLUT_LEFT_BUTTON && state == GLUT_UP)
+	{		
+		if(k1 >= 342 && k1 <= 534 && k2 >= 94 && k2 <= 154)		/// back from easy high score
+			page = 2;
+	}
+
+	if(page==4 && button == GLUT_LEFT_BUTTON && state == GLUT_UP)
+	{
+		if(k1 >= 342 && k1 <= 534 && k2 >= 94 && k2 <= 154)		/// back from hard high score
+			page = 2;
+	}
+
+	if(page==6 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+	{
+		if(k1 >= 342 && k1 <= 534 && k2 >= 94 && k2 <= 154)		/// back from (settings/level)
+			page = 0;
+
+		//
+		else if(k1 >= 564 && k1 <= 804 && k2 >= 430 && k2 <= 490)	//// for easy level
+		{
+			play = 1;
+			life = 3;
+			
+			FILE *nakib;
+			nakib = fopen("file/Level.txt","w");
+			fprintf(nakib,"%d %d",play,life);
+			fclose(nakib);
+		}
+		
+		else if(k1 >= 564 && k1 <= 804 && k2 >= 330 && k2 <= 388)	//// for hard level
+		{
+			play = 2;
+			life = 3;
+
+			FILE *nakib;
+			nakib = fopen("file/Level.txt","w");
+			fprintf(nakib,"%d %d",play,life);
+			fclose(nakib);
+		}
+	}
+
+	//when game is running
+	if(page==1 && button == GLUT_LEFT_BUTTON && state == GLUT_UP)
+	{				
+		if(k1 >= 1000 && k1 <= 1080 && k2 >= 665 && k2 <= 700)		/// back to the main menu (when game is running)
+			variable_reinitialization_2();
+
+		else if(k1 >= 865 && k1 <= 945 && k2 >= 665 && k2 <= 700)		/// for restart the game (when game is running)
+			variable_reinitialization_1();
+
+		else if(k1 >= 730 && k1 <= 810 && k2 >= 665 && k2 <= 700 && pause == 0)		/// for pause the game (when game is running)
+		{
+			iPauseTimer(0);
+			iPauseTimer(1);
+			iPauseTimer(2);
+			pause = 1;
+			end_life = 1;   /// when game over(or pause) then end_life = 1 . that's why shooter can not be moven by user.
+			iPauseTimer(3);
+		}
+		else if(k1 >= 730 && k1 <= 810 && k2 >= 665 && k2 <= 700 && pause == 1)		/// for resume the game (when game is running)
+		{
+			iResumeTimer(0);
+			iResumeTimer(1);
+			iResumeTimer(2);
+			pause = 0;
+			end_life = 0;  /// when game over(or pause) then end_life = 1 . that's why shooter can not be moven by user.
+			iResumeTimer(3);
+		}
+	}
+
+	//when game is over
+	if(page==7 && button == GLUT_LEFT_BUTTON && state == GLUT_UP)
+	{				
+		if(k1 >= 548 && k1 <= 811 && k2 >= 186 && k2 <= 248)		/// back to the main menu (when game is running)
+			variable_reinitialization_2();
+
+		else if(k1 >= 548 && k1 <= 811 && k2 >= 280 && k2 <= 342)		/// for restart the game (when game is running)
+			variable_reinitialization_1();
+	}
+
+	// when game over and highScore is occur
+	if(page==8 && button == GLUT_LEFT_BUTTON && state == GLUT_UP)  /// when click the enter button ( to insert the name of the highScorer )
+	{
+		if(k1 >= 548 && k1 <= 812 && k2 >= 135 && k2 <= 195)	
+		{
+			if(len != 0)
+			{
+				strcpy(scores[5].name, str);
+				scores[5].highscore = scr;
+
+				scores[5].minute = time_minute;
+				scores[5].second = time_second;
+
+				for(n = 0; n < len; n++)
+					str[n] = 0;
+				len = 0;				
+				
+				High_score_Write();
+				variable_reinitialization_2();
+			}	
+		}
+	}
+}
+
+void update_time()
+{
+	my_time++;
+}
+
+void variable_reinitialization_1()	// for try again. when game is running or over
+{	
+	page = 1;				
+	iResumeTimer(3);
+			
+	common_variable_reinitialization();
+}
+
+void variable_reinitialization_2()  // back to the main menu. when game is running or over
+{	
+	page = 0;
+	iPauseTimer(1);
+
+	common_variable_reinitialization();
+}
+
+void common_variable_reinitialization()
+{
+	FILE *fp;
+	fp = fopen("file/Level.txt", "r");
+	fscanf(fp," %d  %d", &play,&life);
+	fclose(fp);
+
+	shooterX = 640;
+
+	pause = 0;				// pause = 0 means the game is not in pause mode
+	my_time = 0;			// for reset the time counter
+
+	waitAMoment = 0;		// waiting time reset ( it is necessary for when game is over )
+
+	highScoreFound = 0;		// 0 means high score not found
+	scr = 0;				// game score/point
+	end_life = 0;			// when life become 0 then end_life become 1 and game will be end
+
+	iResumeTimer(0);
+	iResumeTimer(1);
+	iResumeTimer(2);
+
+	bubble[0].bubbleX = 260+rand() % 800;
+	bubble[1].bubbleX = 260+rand() % 800;
+	bubble[2].bubbleX = 260+rand() % 800;
+	bubble[3].bubbleX = 260+rand() % 800;
+	bubble[4].bubbleX = 260+rand() % 800;
+	bubble[0].bubbleY = 660;
+	bubble[1].bubbleY = 660;
+	bubble[2].bubbleY = 1300;	
+	bubble[3].bubbleY = 1700; // after 20 sec	
+	bubble[4].bubbleY = 3000; // after 30 sec
+
+	bubble[0].dy = -1;	bubble[1].dy = -2;  bubble[2].dy = -3;  bubble[3].dy = -2;  bubble[4].dy = -3;
+
+	bulletget[0] = 1; bulletget[1] = 1; bulletget[2] = 1;
+
+	mode[0]= 0;	mode[1]= 0; mode[2]= 0;
+
+	bulletX[0]=685.5; bulletX[1]=685.5; bulletX[2]=685.5;
+	bulletY[0]=80; bulletY[1]=80; bulletY[2]=80;	
+
+	w[0]=0;	w[1]=0; w[2]=0;
+	a[0]=0;	a[1]=0; a[2]=0;
+	d[0]=0;	d[1]=0; d[2]=0;
+
+	x[0]=1; x[1]=1; x[2]=1;
+	y[0]=1; y[1]=1; y[2]=1;
+	z[0]=1; z[1]=1; z[2]=1;
+
+	count[0]=1;	count[1]=1; count[2]=1; count[3]=1; count[4]=1;
+}
+
 void High_score_read()
 {
-	if((life == 0 && play == 1) || page == 3)
+	if((life == 0 && play == 1) || page == 3)	// play = 1 means easy level
 	{
 		FILE *fp;
 		int i;
-		char a1[100],a2[100];
+		char a1[20],a2[10], s1[4], m1[4];
 		
-		fp = fopen("easy_score.txt", "r");    
+		fp = fopen("file/easy_score.txt", "r");    
 		if(fp == NULL)
 		{
 			printf("Error in opening file\n");
@@ -537,9 +706,13 @@ void High_score_read()
 		{               
 			for(i=0;i<5;i++)
 			{
-				fscanf(fp,"%s %s",a1,a2 );
+				fscanf(fp,"%s %s %s %s",a1,a2,m1,s1 );
+
 				strcpy(scores[i].name, a1);		
 				scores[i].highscore = atoi(a2);
+				scores[i].minute = atoi(m1);
+				scores[i].second = atoi(s1);
+
 				a3[i]= scores[i].highscore;
 						//printf("%s \t %d  %d\n",scores[i].name,scores[i].highscore,a3[i]);		
 			}
@@ -551,13 +724,13 @@ void High_score_read()
 	}
 
 	
-	else if((life == 0 && play == 2) || page == 4)
+	else if((life == 0 && play == 2) || page == 4)	// play = 2 means hard level
 	{
 		FILE *fp;
 		int i;
-		char a1[100],a2[100];
+		char a1[20],a2[10], s1[4], m1[4];
 		
-		fp = fopen("hard_score.txt", "r");    
+		fp = fopen("file/hard_score.txt", "r");    
 		if(fp == NULL)
 		{
 			printf("Error in opening file\n");
@@ -568,9 +741,13 @@ void High_score_read()
 		{               
 			for(i=0;i<5;i++)
 			{
-				fscanf(fp,"%s %s",a1,a2 );
+				fscanf(fp,"%s %s %s %s",a1,a2,m1,s1 );
+
 				strcpy(scores[i].name, a1);		
 				scores[i].highscore = atoi(a2);
+				scores[i].minute = atoi(m1);
+				scores[i].second = atoi(s1);
+
 				a3[i]= scores[i].highscore;
 						//printf("%s \t %d  %d\n",scores[i].name,scores[i].highscore,a3[i]);		
 			}
@@ -597,10 +774,10 @@ void check_high_score()
         }
 
 	if(a3[5] != scr)
-	l=1;
+		highScoreFound = 1;
 }
 
-void sort_arry()
+void high_score_sort()
 {
 	int i,j;
 	for(i=5;i>0;i--)
@@ -618,170 +795,230 @@ void sort_arry()
 void High_score_Write()
 {
 	int i;
-	sort_arry();
+	high_score_sort();
 	
 	if(play == 1)
 	{
 		FILE *fp;
-		fp = fopen("easy_score.txt", "w");
+		fp = fopen("file/easy_score.txt", "w");
 		for(i=0;i<5;i++)
-				fprintf(fp,"%s \t\t\t %d \n", scores[i].name, scores[i].highscore );
+			fprintf(fp,"%s \t\t\t %d \t %d \t %d  \n", scores[i].name, scores[i].highscore,
+														scores[i].minute, scores[i].second );
 		fclose(fp);
 	}
 
 	else if(play == 2)
 	{
 		FILE *fp;
-		fp = fopen("hard_score.txt", "w");
+		fp = fopen("file/hard_score.txt", "w");
 		for(i=0;i<5;i++)
-				fprintf(fp,"%s \t\t\t %d \n", scores[i].name, scores[i].highscore );
+				fprintf(fp,"%s \t\t\t %d \t %d \t %d  \n", scores[i].name, scores[i].highscore,
+														scores[i].minute, scores[i].second );
 		fclose(fp);
 	}
 }
 
-void draw_input_box()
-{
-	if(l==1)
-	{	
-		if(active_input == 1)
-		{
-			iSetColor(0, 255, 0);
-			iRectangle(115, 180, 250, 30);
-		}
-		else
-		{
-			iSetColor(150, 150, 150);
-			iRectangle(115, 180, 250, 30);
-		}
-
-		iSetColor(0, 255, 0);
-		iText(180, 190, str,GLUT_BITMAP_HELVETICA_18);
-	}
-}
-
-void text()
+void show_score_and_life_in_text()
 {	
-	iSetColor(0,255,0);
-	sprintf(text_score,"Score: %d",scr);
-	iText(5,30,text_score,GLUT_BITMAP_HELVETICA_18);
+	iSetColor(168,38,147);
+	iFilledRectangle(242,652,887,60);
 
-	iSetColor(0,255,0);
-	char aa1[100];
-	sprintf(aa1,"%d",life);
-	iText(430,20,aa1,GLUT_BITMAP_HELVETICA_18);
+	//score
+	iSetColor(255,255,255);
+	sprintf(text_score,"Score");
+	iText(285,689,text_score,GLUT_BITMAP_HELVETICA_18);
+
+	sprintf(text_score_value,"%d",scr);
+	iText(295,665,text_score_value,GLUT_BITMAP_HELVETICA_18);
 	
-	if(l==1)
-	{
-		iSetColor(255,0,0);
-		iText(172,360,"GAME OVER",GLUT_BITMAP_HELVETICA_18);
-		iSetColor(0,255,0);
-		iText(125,305,"wow!!!  A new high score",GLUT_BITMAP_HELVETICA_18);
-		iText(140,265,"So, click in the rectangle.", GLUT_BITMAP_HELVETICA_18);
-		iText(152,245,"And enter your name.", GLUT_BITMAP_HELVETICA_18);
+	//Time
+	sprintf(text_time,"Time");
+	iText(400,689,text_time,GLUT_BITMAP_HELVETICA_18);
+
+	time_minute = my_time/60;
+	time_second =((my_time/60.0)-time_minute)*60;
+	
+	if(my_time < 10){		
+		sprintf(text_time_value,"%d s",my_time);
+		iText(410,665,text_time_value,GLUT_BITMAP_HELVETICA_18);
 	}
+	else if(my_time < 60){		
+		sprintf(text_time_value,"%d s",my_time);
+		iText(405,665,text_time_value,GLUT_BITMAP_HELVETICA_18);
+	}
+	else if( time_second < 10 ){		
+		sprintf(text_time_value,"%d m %.0f s",time_minute, time_second);
+		iText(393,665,text_time_value,GLUT_BITMAP_HELVETICA_18);
+	}
+	else{				
+		sprintf(text_time_value,"%d m %.0f s",time_minute, time_second);
+		iText(388,665,text_time_value,GLUT_BITMAP_HELVETICA_18);
+	}
+
+	//life		
+	sprintf(text_life,"Life");
+	iText(500,689,text_life,GLUT_BITMAP_HELVETICA_18);
+
+	sprintf(text_life_value,"%d",life);
+	iText(508,665,text_life_value,GLUT_BITMAP_HELVETICA_18);
+	//iShowBMP(850,687,"life.bmp");
+	
+	//level
+	iText(590,689,"Level",GLUT_BITMAP_HELVETICA_18);
+
+	if (play == 1)
+		iText(592,665,"Easy",GLUT_BITMAP_HELVETICA_18);
+	else if(play == 2)
+		iText(592,665,"Hard",GLUT_BITMAP_HELVETICA_18);
+
+	//Pause
+	iSetColor(255,255,255);
+	if(pause == 0)
+	{
+		iText(745,677,"Pause",GLUT_BITMAP_HELVETICA_18);	
+		iRectangle(730, 665, 80, 35);
+	}
+	else
+	{
+		iText(738,677,"Resume",GLUT_BITMAP_HELVETICA_18);
+		iRectangle(730, 665, 80, 35);
+	}
+
+	//Restart
+	iText(877,677,"Restart",GLUT_BITMAP_HELVETICA_18);
+	iRectangle(865, 665, 80, 35);
+	
+	//Manu
+	iText(1018,677,"Manu",GLUT_BITMAP_HELVETICA_18);
+	iRectangle(1000, 665, 80, 35);	
 }
 
 
 
 void iKeyboard(unsigned char mx)
 {
-	if(mx == 'e' || mx == 'E')
+	if(mx == 'w' || mx == 'W')
 	{
 		mode[0] = 1;
-		e[0] = 1;
+		w[0] = 1;
 	}
 
-	else if(mx == 'f' || mx == 'F')
+	else if(mx == 'd' || mx == 'D')
 	{
 		mode[0] = 1;
-		f[0] = 1;
+		d[0] = 1;
 	}
 
-	else if(mx == 's' || mx == 'S')
+	else if(mx == 'a' || mx == 'A')
 	{
 		mode[0] = 1;
-		s[0] = 1;
+		a[0] = 1;
 	}
 
 ///////
 
-	if( bulletget[0] == 0 && (mx == 'e' || mx == 'E'))
+	if( bulletget[0] == 0 && (mx == 'w' || mx == 'W'))
 	{
 		mode[1] = 1;
-		e[1] = 1;
+		w[1] = 1;
 	}
 		
-	else if( bulletget[0] == 0 && (mx == 'f' || mx == 'F'))
+	else if( bulletget[0] == 0 && (mx == 'd' || mx == 'D'))
 	{
 		mode[1] = 1;
-		f[1] = 1;
+		d[1] = 1;
 	}
 
-	else if( bulletget[0] == 0  && (mx == 's' || mx == 'S'))
+	else if( bulletget[0] == 0  && (mx == 'a' || mx == 'A'))
 	{
 		mode[1] = 1;
-		s[1] = 1;
+		a[1] = 1;
 	}
 
 //////
-	if( bulletget[0] == 0 && bulletget[1] == 0 && (mx == 'e' || mx == 'E') )
+	if( bulletget[0] == 0 && bulletget[1] == 0 && (mx == 'w' || mx == 'W') )
 	{
 		mode[2] = 1;
-		e[2] = 1;
+		w[2] = 1;
 	}
 	
-	else if( bulletget[0] == 0 && bulletget[1] == 0 && (mx == 's' || mx == 'S') )
+	else if( bulletget[0] == 0 && bulletget[1] == 0 && (mx == 'a' || mx == 'A') )
 	{
 		mode[2] = 1;
-		s[2] = 1;
+		a[2] = 1;
 	}
 
-	else if( bulletget[0] == 0 && bulletget[1] == 0 && (mx == 'f' || mx == 'F') )
+	else if( bulletget[0] == 0 && bulletget[1] == 0 && (mx == 'd' || mx == 'D') )
 	{
 		mode[2] = 1;
-		f[2] = 1;
+		d[2] = 1;
 	}
 
 
-	if(l==1 && active_input == 1 )
+	if(highScoreFound == 1 && page == 8)
 	{
-		if(mx == '\r')
+		if(mx == 8)	/// if backspace is pressed from keyboard
+		{			
+			if(len != 0 )
+			{
+				len -- ;
+				str[len] = ' ' ;				
+			}
+		}
+
+		else if(mx == 32)  /// if space is pressed from keyboard
+		{			
+			/// Do nothing
+		}
+
+		else if(mx == '\r')	/// if enter is pressed from keyboard
+		{
+			if(len != 0)
 			{
 				strcpy(scores[5].name, str);
-				scores[5].highscore = scr;
-				active_input = 0;
+				scores[5].highscore = scr;	
+
+				scores[5].minute = time_minute;
+				scores[5].second = time_second;
 
 				for(n = 0; n < len; n++)
 					str[n] = 0;
-				len = 0;				
-				iSetColor(255, 0, 0);
+				len = 0;								
+
 				High_score_Write();
-				variable_reinitialization_3();
-			}
-			else
-			{
-				str[len] = mx;
-				len++;
-			}
+				variable_reinitialization_2();
+			}			
+		}
+
+		else if(len == 8 )	/// if name length exceed 8 
+		{
+			/// Do nothing
+		}
+	
+		else	/// insert the character to str[] 
+		{
+			str[len] = mx;
+			len ++ ;
+		}
 	}
 }
 
-void iSpecialKeyboard(unsigned char  a)
+void iSpecialKeyboard(unsigned char a)
 {
-	if(a == GLUT_KEY_LEFT && shooterX >0 && end_life==0)
+	if(a == GLUT_KEY_LEFT && shooterX >240 && end_life==0)
 	{
-		shooterX -= 10;
-		if(bulletget[0] == 1)	bulletX[0] -=10;
-		if(bulletget[1] == 1)	bulletX[1] -=10;
-		if(bulletget[2] == 1)	bulletX[2] -=10;
+		shooterX -= 20;
+		if(bulletget[0] == 1)	bulletX[0] -=20;
+		if(bulletget[1] == 1)	bulletX[1] -=20;
+		if(bulletget[2] == 1)	bulletX[2] -=20;
 	}
 	
-	if(a == GLUT_KEY_RIGHT && shooterX <360 && end_life==0)
+	if(a == GLUT_KEY_RIGHT && shooterX <1040 && end_life==0)
 	{
-		shooterX += 10;
-		if(bulletget[0] == 1)	bulletX[0] +=10;
-		if(bulletget[1] == 1)	bulletX[1] +=10;
-		if(bulletget[2] == 1)	bulletX[2] +=10;
+		shooterX += 20;
+		if(bulletget[0] == 1)	bulletX[0] +=20;
+		if(bulletget[1] == 1)	bulletX[1] +=20;
+		if(bulletget[2] == 1)	bulletX[2] +=20;
 	}
 
 }
@@ -790,202 +1027,165 @@ void bubble_change()
 {
 	if(page == 1)
 	{
-	for(p=0;p<=4;p++)
-	{
-		bubble[p].bubbleX += bubble[p].dx;
-		bubble[p].bubbleY += bubble[p].dy;	
-		if(bubble[p].bubbleX < 0 || bubble[p].bubbleX > 388)
-			bubble[p].dx = -bubble[p].dx;
-		if(bubble[p].bubbleY < 63 )		//63
+		for(p=0;p<=4;p++)
 		{
-			bubble[p].bubbleX = 5 + rand() % 380;
-			bubble[p].bubbleY = 450;
-			life -=1;
-			count[p] = 1;
-		}
-	}
-
-	High_score_read();
-
-	}
-}
-
-bool detect_collision_1(int j)
-{
-	return (bulletX[i] > ( bubble[j].bubbleX + 4)) && (bulletX[i] < (bubble[j].bubbleX +64-1)) &&  (bulletY[i] > (bubble[j].bubbleY + 2)) && (bulletY[i] < bubble[j].bubbleY +64-2);
-}
-
-void bullet_change_and_collision_1()
-{
-
-	if(page == 1 && play == 1)
-	{
-			
-		iPauseTimer(1);
-
-		for(i=0;i<=2;i++)
-		{
-	
-			if(mode[i] == 1)
+			bubble[p].bubbleX += bubble[p].dx;
+			bubble[p].bubbleY += bubble[p].dy;	
+			if(bubble[p].bubbleX <= 242 || bubble[p].bubbleX >= 1064)
+				bubble[p].dx = -bubble[p].dx;
+			if(bubble[p].bubbleY < 84 )	
 			{
-				if(e[i]==1 && x[i]==1 && y[i]==1)
-				{
-					bulletget[i] = 0;
-					bulletY[i] += 5;
-				}
-
-				else if (s[i]== 1 && z[i]==1)
-				{
-					x[i] = 0;
-					bulletget[i] = 0;
-					bulletX[i] -= 4;
-					bulletY[i] += 3;
-				}
-
-				else if ( f[i]== 1 )
-				{
-					y[i] = 0;
-					z[i]=0;
-					bulletget[i] = 0;
-					bulletX[i] += 4;
-					bulletY[i] += 3;
-				}
-		
-				for(j=0;j<=4;j++)
-				{
-					if(detect_collision_1(j))
-					{
-						scr += 5;
-						bulletget[i] = 1;
-						mode[i] = 0;
-						e[i]=0;
-						f[i]=0;
-						s[i]=0;
-						x[i]=1;
-						y[i]=1;
-						z[i]=1;
-						bulletX[i] = shooterX + 36;
-						bulletY[i] = 65;
-						bubble[j].bubbleX = rand() % 388;
-						bubble[j].bubbleY = 450;	//388
-					}
-		
-					else if(bulletX[i] > 452 || bulletX[i]<0 || bulletY[i] > 450)
-					{
-						mode[i] = 0;
-						e[i]=0;
-						f[i]=0;
-						s[i]=0;
-						x[i]=1;
-						y[i]=1;
-						z[i]=1;
-						bulletget[i] = 1;
-						bulletX[i] = shooterX + 38;
-						bulletY[i] = 65;
-					}
-				}	
+				bubble[p].bubbleX =(260+rand() % 800);
+				bubble[p].bubbleY = 660;		// (670+rand() % 500) 
+				life -=1;
+				count[p] = 1;
 			}
 		}
+		High_score_read();
 	}
 }
 
-void method()
+bool detect_collision(int j)
+{
+	return (bulletX[i] > ( bubble[j].bubbleX + 4)) && (bulletX[i] < (bubble[j].bubbleX +64-1)) &&  
+			(bulletY[i] > (bubble[j].bubbleY + 2)) && (bulletY[i] < bubble[j].bubbleY +64-2);
+}
+
+void bullet_change_and_collision_level_wise()
+{
+	if(page == 1 && play ==1)	// play = 1 for easy level
+	{
+		bullet_change_and_collision();
+		bullet_change_and_collision(); // same method call again to increase the bullet speed 2 times
+	}
+
+	else if(page == 1 && play ==2)	// play = 2 for hard level
+	{
+		bullet_change_and_collision();
+		bullet_change_and_collision(); // same method call again to increase the bullet speed 2 times
+	}
+}
+
+void bullet_change_and_collision()
 {
 	for(i=0;i<=2;i++)
+	{	
+		if(mode[i] == 1)
 		{
-	
-			if(mode[i] == 1)
+			if(w[i]==1 && x[i]==1 && y[i]==1)
 			{
-				if(e[i]==1 && x[i]==1 && y[i]==1)
-				{
-					bulletget[i] = 0;
-					bulletY[i] += 5;
-				}
-
-				else if (s[i]== 1 && z[i]==1)
-				{
-					x[i] = 0;
-					bulletget[i] = 0;
-					bulletX[i] -= 4;
-					bulletY[i] += 3;
-				}
-
-				else if ( f[i]== 1 )
-				{
-					y[i] = 0;
-					z[i]=0;
-					bulletget[i] = 0;
-					bulletX[i] += 4;
-					bulletY[i] += 3;
-				}
-		
-				for(j=0;j<=4;j++)
-				{
-					if(detect_collision_1(j))
-					{
-						count[j] += 2;
-						bulletget[i] = 1;
-						mode[i] = 0;
-						e[i]=0;
-						f[i]=0;
-						s[i]=0;
-						x[i]=1;
-						y[i]=1;
-						z[i]=1;
-						bulletX[i] = shooterX + 36;
-						bulletY[i] = 65;
-						
-						if(count[j] == 7)
-						{
-							count[j] = 1;
-							scr += 5;
-							bubble[j].bubbleX = rand() % 388;
-							bubble[j].bubbleY = 450;	//388
-						}
-					}
-		
-					else if(bulletX[i] > 452 || bulletX[i]<0 || bulletY[i] > 450)
-					{
-						mode[i] = 0;
-						e[i]=0;
-						f[i]=0;
-						s[i]=0;
-						x[i]=1;
-						y[i]=1;
-						z[i]=1;
-						bulletget[i] = 1;
-						bulletX[i] = shooterX + 38;
-						bulletY[i] = 65;
-					}
-				}	
+				bulletget[i] = 0;
+				bulletY[i] += 5;
 			}
+
+			else if (a[i]== 1 && z[i]==1)
+			{
+				x[i] = 0;
+				bulletget[i] = 0;
+				bulletX[i] -= 4;
+				bulletY[i] += 3;
+			}
+
+			else if ( d[i]== 1 )
+			{
+				y[i] = 0;
+				z[i]=0;
+				bulletget[i] = 0;
+				bulletX[i] += 4;
+				bulletY[i] += 3;
+			}
+		
+			for(j=0;j<=4;j++)
+			{
+				if(detect_collision(j) && play == 1)	// play = 1 for easy level
+				{
+					scr += 5;
+					bulletget[i] = 1;
+					mode[i] = 0;
+					w[i]=0;
+					a[i]=0;
+					d[i]=0;
+					x[i]=1;
+					y[i]=1;
+					z[i]=1;
+					bulletX[i] = shooterX + 46;
+					bulletY[i] = 80;
+					bubble[j].bubbleX = (260+rand() % 800);
+					bubble[j].bubbleY = 660;
+				}
+				else if(detect_collision(j) && play == 2)	 // play = 2 for hard level
+				{
+					count[j] += 2;
+					bulletget[i] = 1;
+					mode[i] = 0;
+					w[i]=0;
+					a[i]=0;
+					d[i]=0;
+					x[i]=1;
+					y[i]=1;
+					z[i]=1;
+					bulletX[i] = shooterX + 46;
+					bulletY[i] = 80;
+						
+					if(count[j] == 5) // for blust the bubble in 1 shot 3, for 2 shot 5, for 3 shot 7
+					{
+						count[j] = 1;
+						scr += 5;
+						bubble[j].bubbleX = (260+rand() % 800);
+						bubble[j].bubbleY = 660;
+					}
+				}
+		
+				else if(bulletX[i] > 1133 || bulletX[i]<240 || bulletY[i] > 652)
+				{
+					mode[i] = 0;
+					w[i]=0;
+					a[i]=0;
+					d[i]=0;
+					x[i]=1;
+					y[i]=1;
+					z[i]=1;
+					bulletget[i] = 1;
+					bulletX[i] = shooterX + 46;
+					bulletY[i] = 80;
+				}
+			}	
 		}
+	}
 }
 
-void bullet_change_and_collision_2()
-{
-
-	if(page == 1 && play ==2)
+void increase_bubble_speed(){
+	/*bubble[0].dx = -3; bubble[0].dy = -3;  bubble[1].dx = 3; bubble[1].dy = -4;  bubble[2].dx = 4; bubble[2].dy = -3;
+	  bubble[3].dx = -4; bubble[3].dy = -4;  bubble[4].dx = -2; bubble[4].dy = -5;*/
+		
+	for(p=0;p<=4;p++)
 	{
-	
-		iPauseTimer(0);
-
-		method();
-		method();
-		method();
-		method();
-	}
+		// bubble[p].dy = bubble[p].dy - 0.01;
+		bubble[p].dy = bubble[p].dy - 1;
+	}	
 }
 
 void main()
-{
-	    
-	iSetTimer(10,bullet_change_and_collision_1);
-	iSetTimer(5,bullet_change_and_collision_2);
-	iSetTimer(35,bubble_change);	
-	iInitialize(452,450,"Baby Bubble Shooter");
+{	
+	// maintain the iSetTimer() function sequence strictly
+
+	iSetTimer(10,bullet_change_and_collision_level_wise); // timer number 0
+	iSetTimer(120000,increase_bubble_speed);		// timer number 1, previously it was for bullte_change_and_collision something like that
+	iSetTimer(35,bubble_change);	// timer number 2
+	iSetTimer(1000, update_time);	// timer number 3
+
+	iInitialize(1366,712,"Air Strike");	
 }
 
 
-void iMouseMove(int k3, int k4 ){}
-void iPassiveMouseMove(int k5, int k6){}
+void iMouseMove(int k3, int k4 ){
+	for(p=0;p<=4;p++)
+	{
+		//printf("bubble[%d].dx = %f \t",p, bubble[p].dx);
+		printf("bubble[%d].dy = %f \n",p, bubble[p].dy);
+	}
+	printf("\n\n");
+}
+void iPassiveMouseMove(int k5, int k6){
+	 //printf("%d %d \n",k5,k6);
+}
