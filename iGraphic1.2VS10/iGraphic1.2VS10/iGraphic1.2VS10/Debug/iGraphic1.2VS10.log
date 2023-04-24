@@ -1,17 +1,17 @@
-﻿Build started 4/22/2023 3:30:57 PM.
-     1>Project "C:\Users\Asus\Desktop\06 Air Strike\iGraphic1.2VS10\iGraphic1.2VS10\iGraphic1.2VS10\iGraphic1.2VS10.vcxproj" on node 2 (build target(s)).
+﻿Build started 4/24/2023 5:40:31 PM.
+     1>Project "C:\Users\Asus\Downloads\Air-Strike\iGraphic1.2VS10\iGraphic1.2VS10\iGraphic1.2VS10\iGraphic1.2VS10.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
          Creating "Debug\iGraphic1.2VS10.unsuccessfulbuild" because "AlwaysCreate" was specified.
        ClCompile:
          All outputs are up-to-date.
        Link:
          All outputs are up-to-date.
-         iGraphic1.2VS10.vcxproj -> C:\Users\Asus\Desktop\06 Air Strike\iGraphic1.2VS10\iGraphic1.2VS10\Debug\iGraphic1.2VS10.exe
+         iGraphic1.2VS10.vcxproj -> C:\Users\Asus\Downloads\Air-Strike\iGraphic1.2VS10\iGraphic1.2VS10\Debug\iGraphic1.2VS10.exe
        FinalizeBuildStatus:
          Deleting file "Debug\iGraphic1.2VS10.unsuccessfulbuild".
          Touching "Debug\iGraphic1.2VS10.lastbuildstate".
-     1>Done Building Project "C:\Users\Asus\Desktop\06 Air Strike\iGraphic1.2VS10\iGraphic1.2VS10\iGraphic1.2VS10\iGraphic1.2VS10.vcxproj" (build target(s)).
+     1>Done Building Project "C:\Users\Asus\Downloads\Air-Strike\iGraphic1.2VS10\iGraphic1.2VS10\iGraphic1.2VS10\iGraphic1.2VS10.vcxproj" (build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:00.06
+Time Elapsed 00:00:00.65
